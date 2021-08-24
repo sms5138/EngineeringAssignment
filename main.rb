@@ -1,6 +1,24 @@
 require 'fileutils'
 require 'etc'
+require 'socket'
+require 'optparse'
 
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: example.rb [options]"
+
+  opts.on('-f', '--filepath PATHTOFILE', 'Source name') { |v| options[:path_to_file] = v }
+  opts.on('-T', '--text TEXTTOADD', 'Source host') { |v| options[:text_to_add] = v }
+  opts.on('-p', '--sourceport PORT', 'Source port') { |v| options[:source_port] = v }
+
+end.parse!
+
+# p options
+# p ARGV
+#
+# puts "hello #{options[:source_name]}"
+
+##### Log related Method
 def create_log_entry(method_name, action)
   home_directory = File.expand_path('~')
   if !(File.exist?("#{home_directory}/testing.log"))
@@ -18,6 +36,21 @@ def create_log_entry(method_name, action)
   }
 end
 
+##### Network related Methods
+def get_ip
+  # turn off reverse DNS resolution temporarily
+  orig, Socket.do_not_reverse_lookup = Socket.do_not_reverse_lookup, true
+
+  UDPSocket.open do |s|
+    # connect to google.com
+    s.connect '64.233.187.99', 1
+    s.addr.last
+  end
+ensure
+  Socket.do_not_reverse_lookup = orig
+end
+
+##### File Related Methods
 def create_new_file(path_to_file, extension)
   dir = File.dirname(path_to_file)
 
@@ -48,6 +81,8 @@ def modify_file(path_to_file, text_to_add)
 
 end
 
+
+##### Process Related Methods
 def open_application(application_name)
   if File.exist? ("/Applications/#{application_name}.app")
     pid = spawn("open '/Applications/#{application_name}.app' -gj")
@@ -62,7 +97,7 @@ end
 def open_file(path_to_file)
 
   # Open the file to show that it has been created, and modified.
-  pid = spawn("open -a TextEdit -W #{path_to_file}")
+  pid = spawn("open #{path_to_file}")
 
   create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
   puts "#{path_to_file} was opened in TextEdit with PID: #{pid}"
@@ -70,22 +105,3 @@ def open_file(path_to_file)
   # Delay to allow assignment.txt to open before it gets deleted.
   sleep(1)
 end
-
-#get home directory
-home_directory = File.expand_path('~')
-
-# create a file
-create_new_file("#{home_directory}/assignment", "txt")
-
-
-# modify a file
-modify_file("#{home_directory}/assignment.txt", "This is the text that is being added...")
-
-# start process by opening file in TextEdit.
-open_file("#{home_directory}/assignment.txt")
-
-# delete a file
-delete_file("#{home_directory}/assignment.txt")
-
-# Open an application
-#open_application("Google Chrome")
