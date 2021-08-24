@@ -85,14 +85,22 @@ end
 
 
 ##### Process Related Methods
-def open_file(path_to_file)
+def open_process(path_to_file)
 
-  # Open the file to show that it has been created, and modified.
-  
   pid = spawn("#{path_to_file}")
 
   create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
   puts "#{path_to_file} has been started with PID: #{pid}"
+
+end
+
+def open_process_with_args(path_to_file, args_for_script)
+
+    path_to_file << " #{args_for_script}"
+    pid = spawn("#{path_to_file}")
+
+    create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
+    puts "#{path_to_file} has been started with PID: #{pid}"
 
 end
 
@@ -116,7 +124,9 @@ end
 if !(options[:script_path].nil?)
   if options[:script_args].nil?
     puts "run script with no args"
+    open_process(options[:script_path])
   else
     puts "run script with args."
+    open_process_with_args(options[:script_path],options[:script_args])
   end
 end
