@@ -1,5 +1,12 @@
 require 'fileutils'
 require 'etc'
+require 'io/console'
+
+def press_any_key
+  print "Please press any key to continue..."
+  STDIN.getch
+  print "            \r"
+end
 
 def create_log_entry(method_name, action)
   home_directory = File.expand_path('~')
@@ -28,6 +35,7 @@ def create_new_file(path_to_file, extension)
   path_to_file << ".#{extension}"
   File.new(path_to_file, 'w')
   create_log_entry("create_new_file", "The following file has been created: #{path_to_file}")
+  puts "The following file has been created: #{path_to_file}"
 end
 
 def delete_file(path_to_file)
@@ -64,6 +72,7 @@ def open_file(path_to_file)
   pid = spawn("open -a TextEdit -W #{path_to_file}")
 
   create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
+  puts "#{path_to_file} was opened in TextEdit with PID: #{pid}"
   
   # Delay to allow assignment.txt to open before it gets deleted.
   sleep(1)
@@ -81,6 +90,8 @@ modify_file("#{home_directory}/assignment.txt", "This is the text that is being 
 
 # start process by opening file in TextEdit.
 open_file("#{home_directory}/assignment.txt")
+
+#press_any_key
 
 # delete a file
 delete_file("#{home_directory}/assignment.txt")

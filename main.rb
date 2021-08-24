@@ -1,12 +1,5 @@
 require 'fileutils'
 require 'etc'
-require 'io/console'
-
-def press_any_key
-  print "Please press any key to continue..."
-  STDIN.getch
-  print "            \r"
-end
 
 def create_log_entry(method_name, action)
   home_directory = File.expand_path('~')
@@ -73,9 +66,9 @@ def open_file(path_to_file)
 
   create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
   puts "#{path_to_file} was opened in TextEdit with PID: #{pid}"
+
   # Delay to allow assignment.txt to open before it gets deleted.
-  #sleep(1)
-  press_any_key
+  sleep(1)
 end
 
 #get home directory
