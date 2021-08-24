@@ -7,16 +7,14 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: example.rb [options]"
 
-  opts.on('-f', '--filepath PATHTOFILE', 'Source name') { |v| options[:path_to_file] = v }
-  opts.on('-T', '--text TEXTTOADD', 'Source host') { |v| options[:text_to_add] = v }
-  opts.on('-p', '--sourceport PORT', 'Source port') { |v| options[:source_port] = v }
+  opts.on('-f', '--filepath PATHTOFILE', 'Path of file to be created, modified, or deleted') { |v| options[:path_to_file] = v }
+  opts.on("-c", "--create", "Determines if the file defined in --filepath will be created.") { |v| options[:create] = v }
+  opts.on('-t', '--text TEXTTOADD', 'Desired text to be added to the file defined in --filepath') { |v| options[:text_to_add] = v }
+  opts.on("-d", "--delete", "Determines if the file defined in --filepath will be deleted.") { |v| options[:delete] = v }
+  opts.on('-s', '--script SCRIPTNAME', 'Path to .sh file that is to be executed') { |v| options[:script_path] = v }
+  opts.on('-a', '--args SCRIPTARGUMENTS', 'Arguements to be passed to .sh script associated with --script.') { |v| options[:script_args] = v }
 
 end.parse!
-
-# p options
-# p ARGV
-#
-# puts "hello #{options[:source_name]}"
 
 ##### Log related Method
 def create_log_entry(method_name, action)
@@ -30,7 +28,7 @@ def create_log_entry(method_name, action)
     }
   end
 
-  entry = "#{Time.now.getutc} | #{method_name} | #{Etc.getlogin} | #{action}"
+  entry = "#{Time.now.getutc} | #{method_name} | #{Etc.getlogin} | #{action} | #{Process.pid}"
   open("#{home_directory}/testing.log", 'a') { |f|
     f.puts entry
   }
@@ -51,17 +49,21 @@ ensure
 end
 
 ##### File Related Methods
-def create_new_file(path_to_file, extension)
+def create_new_file(path_to_file)
   dir = File.dirname(path_to_file)
 
   unless File.directory?(dir)
     FileUtils.mkdir_p(dir)
   end
 
-  path_to_file << ".#{extension}"
-  File.new(path_to_file, 'w')
-  create_log_entry("create_new_file", "The following file has been created: #{path_to_file}")
-  puts "The following file has been created: #{path_to_file}"
+  if !(File.exist?(path_to_file))
+    File.new(path_to_file, 'w')
+    create_log_entry("create_new_file", "The following file has been created: #{path_to_file}")
+    puts "The following file has been created: #{path_to_file}"
+  else
+    create_log_entry("create_new_file", "The following file could not be created as it already exists: #{path_to_file}")
+    puts "The following file could not be created as it already exists: #{path_to_file}"
+  end
 end
 
 def delete_file(path_to_file)
@@ -83,25 +85,38 @@ end
 
 
 ##### Process Related Methods
-def open_application(application_name)
-  if File.exist? ("/Applications/#{application_name}.app")
-    pid = spawn("open '/Applications/#{application_name}.app' -gj")
-    create_log_entry("open_application", "#{application_name} started with pid: #{pid}.")
-    puts "#{application_name} started with pid: #{pid}."
-  else
-    create_log_entry("open_application", "#{application_name} couldn't be located, and couldn't start.")
-    puts "#{application_name} couldn't be located, and couldn't start."
-  end
-end
-
 def open_file(path_to_file)
 
   # Open the file to show that it has been created, and modified.
-  pid = spawn("open #{path_to_file}")
+  
+  pid = spawn("#{path_to_file}")
 
   create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
-  puts "#{path_to_file} was opened in TextEdit with PID: #{pid}"
+  puts "#{path_to_file} has been started with PID: #{pid}"
 
-  # Delay to allow assignment.txt to open before it gets deleted.
-  sleep(1)
+end
+
+
+##### 
+if !(options[:path_to_file].nil?)
+  puts "found"
+  if !(options[:create].nil?)
+    create_new_file(options[:path_to_file])
+  end
+
+  if !(options[:delete].nil?)
+    delete_file(options[:path_to_file])
+  end
+
+  if !(options[:text_to_add].nil?)
+    modify_file(options[:path_to_file], options[:text_to_add])
+  end
+end
+
+if !(options[:script_path].nil?)
+  if options[:script_args].nil?
+    puts "run script with no args"
+  else
+    puts "run script with args."
+  end
 end
