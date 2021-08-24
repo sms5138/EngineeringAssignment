@@ -43,7 +43,7 @@ def modify_file(path_to_file, text_to_add)
     f.puts text_to_add
   }
   create_log_entry("modify_file", "Information has been added to #{path_to_file}.")
-  puts "Information has been added to #{path_to_file}."
+    puts "Information has been added to #{path_to_file}."
 
 end
 
@@ -75,7 +75,6 @@ puts pid
 
 # Delay to allow assignment.txt to open before it gets deleted.
 sleep(0.5)
-
 
 # delete a file
 delete_file("#{home_directory}/assignment.txt")
