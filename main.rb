@@ -58,6 +58,17 @@ def open_application(application_name)
   end
 end
 
+def open_file(path_to_file)
+
+  # Open the file to show that it has been created, and modified.
+  pid = spawn("open -a TextEdit -W #{path_to_file}")
+
+  create_log_entry("open_file", "#{path_to_file} was opened in TextEdit with PID: #{pid}")
+  
+  # Delay to allow assignment.txt to open before it gets deleted.
+  sleep(1)
+end
+
 #get home directory
 home_directory = File.expand_path('~')
 
@@ -68,16 +79,11 @@ create_new_file("#{home_directory}/assignment", "txt")
 # modify a file
 modify_file("#{home_directory}/assignment.txt", "This is the text that is being added...")
 
-# Open the file to show that it has been created, and modified.
-pid = spawn("open -a TextEdit -W #{home_directory}/assignment.txt")
-
-puts pid
-
-# Delay to allow assignment.txt to open before it gets deleted.
-sleep(0.5)
+# start process by opening file in TextEdit.
+open_file("#{home_directory}/assignment.txt")
 
 # delete a file
 delete_file("#{home_directory}/assignment.txt")
 
 # Open an application
-open_application("Google Chrome")
+#open_application("Google Chrome")
