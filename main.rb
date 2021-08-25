@@ -21,7 +21,7 @@ end.parse!
 
 ##### Log related Method
 def create_log_entry(method_name, action)
-  home_directory = File.expand_path('~')
+  home_directory = __dir__
   if !(File.exist?("#{home_directory}/EngineeringAssignmentLog.csv"))
     puts "Log file will be located at #{home_directory}/EngineeringAssignmentLog.csv"
     File.new("#{home_directory}/EngineeringAssignmentLog.csv", 'w')
@@ -68,7 +68,7 @@ def send_data_to_network(url_to_receive_data,message_to_send)
   response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
     http.request(request)
   end
-  puts response
+  puts "The following message: '#{message_to_send}' was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}."
   create_log_entry("send_data_to_network", "The following message: '#{message_to_send}' was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}.")
 end
 
@@ -102,8 +102,8 @@ def modify_file(path_to_file, text_to_add)
   open(path_to_file, 'a') { |f|
     f.puts text_to_add
   }
-  create_log_entry("modify_file", "Information has been added to #{path_to_file}.")
-    puts "Information has been added to #{path_to_file}."
+  create_log_entry("modify_file", "'#{text_to_add}' has been added to #{path_to_file}.")
+    puts "'#{text_to_add}' has been added to #{path_to_file}."
 
 end
 
@@ -131,7 +131,7 @@ end
 
 ##### 
 if !(options[:path_to_file].nil?)
-  puts "found"
+  puts "Entering file manipulation section..."
   if !(options[:create].nil?)
     create_new_file(options[:path_to_file])
   end
@@ -146,16 +146,18 @@ if !(options[:path_to_file].nil?)
 end
 
 if !(options[:script_path].nil?)
+  puts "Entering process running section..."
   if options[:script_args].nil?
-    puts "run script with no args"
+    puts "Running script with no args..."
     open_process(options[:script_path])
   else
-    puts "run script with args."
+    puts "Running script with args..."
     open_process_with_args(options[:script_path],options[:script_args])
   end
 end
 
 if !(options[:website].nil?)
+  puts "Entering network connection section..."
   if !(options[:message_to_website].nil?)
     send_data_to_network(options[:website],options[:message_to_website])
   else
