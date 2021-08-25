@@ -68,8 +68,8 @@ def send_data_to_network(url_to_receive_data,message_to_send)
   response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
     http.request(request)
   end
-  puts "The following message: '#{message_to_send}' was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}."
-  create_log_entry("send_data_to_network", "The following message: '#{message_to_send}' was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}.")
+  puts "The following message: '#{message_to_send}' with bytesize: #{message_to_send.bytesize} bytes was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}."
+  create_log_entry("send_data_to_network", "The following message: '#{message_to_send}' with bytesize: #{message_to_send.bytesize} bytes was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}.")
 end
 
 ##### File Related Methods
