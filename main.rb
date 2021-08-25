@@ -2,6 +2,8 @@ require 'fileutils'
 require 'etc'
 require 'socket'
 require 'optparse'
+require 'net/http'
+require 'uri'
 
 options = {}
 OptionParser.new do |opts|
@@ -13,23 +15,27 @@ OptionParser.new do |opts|
   opts.on("-d", "--delete", "Determines if the file defined in --filepath will be deleted.") { |v| options[:delete] = v }
   opts.on('-s', '--script SCRIPTNAME', 'Path to .sh file that is to be executed') { |v| options[:script_path] = v }
   opts.on('-a', '--args SCRIPTARGUMENTS', 'Arguements to be passed to .sh script associated with --script.') { |v| options[:script_args] = v }
-
+  opts.on('-w', '--website HTTPWEBSITE', 'HTTP address for the website that will receive data') { |v| options[:website] = v }
+  opts.on('-m', '--message MESSAGETOWEBSITE', 'This is the plain text message that will be sent to the website in question.') { |v| options[:message_to_website] = v }
 end.parse!
 
 ##### Log related Method
 def create_log_entry(method_name, action)
   home_directory = File.expand_path('~')
-  if !(File.exist?("#{home_directory}/testing.log"))
-    puts "Log file will be located at #{home_directory}/testing.log"
-    File.new("#{home_directory}/testing.log", 'w')
+  if !(File.exist?("#{home_directory}/EngineeringAssignmentLog.csv"))
+    puts "Log file will be located at #{home_directory}/EngineeringAssignmentLog.csv"
+    File.new("#{home_directory}/EngineeringAssignmentLog.csv", 'w')
 
-    open("#{home_directory}/testing.log", 'a') { |f|
-      f.puts "#{Time.now.getutc} | create_log_entry | #{Etc.getlogin} | The log file has been created at: #{home_directory}/testing.log"
+
+
+    open("#{home_directory}/EngineeringAssignmentLog.csv", 'a') { |f|
+      f.puts "Time,Method,User,ProcessID,Description"
+      f.puts "#{Time.now.getutc},create_log_entry,#{Etc.getlogin},#{Process.pid},The log file has been created at: #{home_directory}/EngineeringAssignmentLog.csv"
     }
   end
 
-  entry = "#{Time.now.getutc} | #{method_name} | #{Etc.getlogin} | #{action} | #{Process.pid}"
-  open("#{home_directory}/testing.log", 'a') { |f|
+  entry = "#{Time.now.getutc},#{method_name},#{Etc.getlogin},#{Process.pid},#{action}"
+  open("#{home_directory}/EngineeringAssignmentLog.csv", 'a') { |f|
     f.puts entry
   }
 end
@@ -46,6 +52,24 @@ def get_ip
   end
 ensure
   Socket.do_not_reverse_lookup = orig
+end
+
+def send_data_to_network(url_to_receive_data,message_to_send)
+  uri = URI.parse("#{url_to_receive_data}")
+  request = Net::HTTP::Post.new(uri)
+  request.content_type = "text/plain"
+  request["Accept"] = "application/json"
+  request.body = "#{message_to_send}"
+
+  req_options = {
+    use_ssl: uri.scheme == "https",
+  }
+
+  response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+    http.request(request)
+  end
+  puts response
+  create_log_entry("send_data_to_network", "The following message: '#{message_to_send}' was sent to: #{url_to_receive_data} from #{get_ip} and received the following response: #{response}.")
 end
 
 ##### File Related Methods
@@ -128,5 +152,13 @@ if !(options[:script_path].nil?)
   else
     puts "run script with args."
     open_process_with_args(options[:script_path],options[:script_args])
+  end
+end
+
+if !(options[:website].nil?)
+  if !(options[:message_to_website].nil?)
+    send_data_to_network(options[:website],options[:message_to_website])
+  else
+    puts "No message was provided to be sent."
   end
 end
