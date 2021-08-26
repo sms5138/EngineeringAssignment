@@ -1,7 +1,7 @@
 # EngineeringAssignment
 This program will allow the user to do the following:
 
-1. Start a process with or without Arguements
+1. Start a process with or without arguments
 2. Create a file in a desired location based
 3. Modify a file based on the provided filepath
 4. Delete a file based on the provided filepath
